@@ -1,0 +1,108 @@
+From 155761a550f09a074f960deb2e65dc8724465714 Mon Sep 17 00:00:00 2001
+From: Jan Engelhardt <jengelh@inai.de>
+Date: Mon, 21 Jul 2014 10:13:00 +0200
+Subject: [PATCH] build: fixes
+
+Require osmogsm in configure.ac, because source code depends on it.
+Find and use system talloc, do not rely on OSMO's bundled copy.
+Rename libmtp to libosmo-mtp, as libmtp is already used by the
+Multimedia Transfer Protocol library.
+---
+ configure.ac           |  4 +++-
+ libosmo-mtp.pc.in      |  2 +-
+ libosmo-sccp.pc.in     |  2 +-
+ src/Makefile.am        | 12 ++++++++----
+ tests/m2ua/Makefile.am |  2 +-
+ tests/sccp/Makefile.am |  4 ++--
+ 6 files changed, 16 insertions(+), 10 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 49c5f7e..2f9d29a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -13,9 +13,11 @@ dnl checks for programs
+ AC_PROG_MAKE_SET
+ AC_PROG_CC
+ AC_PROG_INSTALL
+-AC_PROG_RANLIB
++LT_INIT
+ 
+ PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 0.3.0)
++PKG_CHECK_MODULES([LIBOSMOGSM], [libosmogsm])
++PKG_CHECK_MODULES([TALLOC], [talloc])
+ 
+ # The following test is taken from WebKit's webkit.m4
+ saved_CFLAGS="$CFLAGS"
+diff --git a/libosmo-mtp.pc.in b/libosmo-mtp.pc.in
+index 675d0d3..5e99dd3 100644
+--- a/libosmo-mtp.pc.in
++++ b/libosmo-mtp.pc.in
+@@ -6,5 +6,5 @@ includedir=@includedir@
+ Name: Osmo MTP Lib
+ Description: Osmo MTP Lib
+ Version: @VERSION@
+-Libs: -L${libdir} -lmtp
++Libs: -L${libdir} -losmo-mtp
+ Cflags: -I${includedir}/
+diff --git a/libosmo-sccp.pc.in b/libosmo-sccp.pc.in
+index eda8d49..9dd18c1 100644
+--- a/libosmo-sccp.pc.in
++++ b/libosmo-sccp.pc.in
+@@ -6,5 +6,5 @@ includedir=@includedir@
+ Name: OpenBSC SCCP Lib
+ Description: OpenBSC SCCP Lib
+ Version: @VERSION@
+-Libs: -L${libdir} -lsccp
++Libs: -L${libdir} -losmo-sccp
+ Cflags: -I${includedir}/
+diff --git a/src/Makefile.am b/src/Makefile.am
+index fa47e85..815fb8c 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -2,8 +2,12 @@ AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)
+ AM_CFLAGS=-Wall $(LIBOSMOCORE_CFLAGS)
+ 
+ sccpdir = $(libdir)
+-sccp_LIBRARIES = libsccp.a libmtp.a libxua.a
++sccp_LTLIBRARIES = libosmo-sccp.la libosmo-mtp.la libosmo-xua.la
+ 
+-libsccp_a_SOURCES = sccp.c
+-libmtp_a_SOURCES = mtp_pcap.c 
+-libxua_a_SOURCES = xua_msg.c
++libosmo_sccp_la_SOURCES = sccp.c
++libosmo_mtp_la_SOURCES = mtp_pcap.c 
++libosmo_xua_la_SOURCES = xua_msg.c
++
++libosmo_sccp_la_LDFLAGS = -release ${PACKAGE_VERSION}
++libosmo_mtp_la_LDFLAGS = -release ${PACKAGE_VERSION}
++libosmo_xua_la_LDFLAGS = -release ${PACKAGE_VERSION}
+diff --git a/tests/m2ua/Makefile.am b/tests/m2ua/Makefile.am
+index 33618ef..a04145f 100644
+--- a/tests/m2ua/Makefile.am
++++ b/tests/m2ua/Makefile.am
+@@ -5,4 +5,4 @@ EXTRA_DIST = m2ua_test.ok
+ 
+ noinst_PROGRAMS = m2ua_test
+ m2ua_test_SOURCES = m2ua_test.c
+-m2ua_test_LDADD = $(top_builddir)/src/libxua.a $(LIBOSMOCORE_LIBS)
++m2ua_test_LDADD = $(top_builddir)/src/libosmo-xua.la $(LIBOSMOCORE_LIBS) ${TALLOC_LIBS}
+diff --git a/tests/sccp/Makefile.am b/tests/sccp/Makefile.am
+index 8cce20c..50624ce 100644
+--- a/tests/sccp/Makefile.am
++++ b/tests/sccp/Makefile.am
+@@ -1,4 +1,4 @@
+-AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include
++AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include ${TALLOC_CFLAGS}
+ AM_CFLAGS=-Wall -ggdb3 $(LIBOSMOCORE_CFLAGS)
+ 
+ EXTRA_DIST = sccp_test.ok
+@@ -6,5 +6,5 @@ EXTRA_DIST = sccp_test.ok
+ noinst_PROGRAMS = sccp_test
+ 
+ sccp_test_SOURCES = sccp_test.c $(top_srcdir)/src/sccp.c
+-sccp_test_LDADD = $(LIBOSMOCORE_LIBS)
++sccp_test_LDADD = $(LIBOSMOCORE_LIBS) ${TALLOC_LIBS}
+ 
+-- 
+2.4.3
+

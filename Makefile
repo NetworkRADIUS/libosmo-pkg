@@ -15,12 +15,8 @@ LIBRARIES	:= $(foreach lib,$(shell git config --file .gitmodules --get-regexp pa
 SUBMODULES	:= $(addprefix $(BASEDIR)/,$(addsuffix /.git,$(LIBRARIES)))
 
 #
-#  Have to ensure all submodules are checked out first
+#  Git version determination script
 #
-ifeq ($(filter $(SUBMODULES),$(MAKECMDGOALS)),)
-OUT=$(shell $(MAKE) -C "$(BASEDIR)" $(SUBMODULES))
-endif
-
 GIT_VERSION	:= \
 version=$$(git describe --abbrev=0 --tags 2> /dev/null || echo "0.0.0");\
 count=$$(git rev-list --all --count);\
@@ -30,6 +26,14 @@ else \
         diff=$$count; \
 fi;\
 echo $${version}_$${diff}_g$$(git rev-parse --short HEAD 2> /dev/null)
+
+#
+#  Initialise the submodules
+#
+OUT := $(foreach x,$(LIBRARIES),$(shell \
+	(test -e "$(BASEDIR)/$(x)" || git submodule update -- "$(BASEDIR)/$(x)" || git submodule init -- "$(BASEDIR)/$(x)")) && \
+	cd "$(BASEDIR)/$(x)" && git checkout $$(git config -f ../.gitmodules submodule.$(x).branch))) \
+))
 
 #
 #  Figure out the 'version' from the latest tag and commit count
@@ -99,11 +103,4 @@ $(RPMDIR)/$(1)-$(2)-$(RELEASE).$(ARCH).rpm: $(SOURCESDIR)/$(1)-$(2).tar.bz2 \
 	@yum --nogpgcheck -y localinstall $(RPMDIR)/*.rpm
 endef
 $(foreach x,$(LIBRARIES),$(eval $(call package,$(x),$(shell cd "$(BASEDIR)/$(x)" && $(GIT_VERSION)))))
-
-#
-#  Initialise submodules
-#
-%/.git: 
-	@git submodule update --init $(@D) > /dev/null 
-	@cd $(@D) && git checkout $$(git config -f ../.gitmodules submodule.$(subst /,,$(dir $@)).branch)
 

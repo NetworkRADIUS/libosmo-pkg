@@ -98,7 +98,7 @@ $(RPMDIR)/$(1)-$(2)-$(RELEASE).$(ARCH).rpm: $(SOURCESDIR)/$(1)-$(2).tar.bz2 \
 					    $(addprefix $(SOURCESDIR)/,$(foreach x,$(wildcard $(SPECSSRCDIR)/*$(1)*.patch),$(notdir $(x))))
 	@echo RPMBUILD $(1)
 	@HOME="$(BASEDIR)" rpmbuild -bb --define="_version $(2)" --define="_release $(RELEASE)" $(SPECSDIR)/$(x).spec
-	@yum --nogpgcheck -y localinstall $(RPMDIR)/*.rpm
+	@sudo yum --nogpgcheck -y localinstall $(RPMDIR)/*.rpm
 endef
 $(foreach x,$(LIBRARIES),$(eval $(call package,$(x),$(shell cd "$(BASEDIR)/$(x)" && $(GIT_VERSION)))))
 

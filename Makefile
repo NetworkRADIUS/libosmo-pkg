@@ -56,7 +56,7 @@ all: $(foreach lib,$(BUILDORDER),$(filter $(RPMDIR)/$(lib)%,$(PACKAGES)))
 directories: $(RPMBUILDDIR) $(SOURCESDIR) $(SPECSDIR) $(RPMDIR)
 
 dependencies:
-	@sudo yum install -y pcsc-lite-devel ortp-devel libtool
+	@sudo yum install -y rpmdevtools gcc-c++ pcsc-lite-devel ortp-devel libtool lksctp-tools-devel
 
 clean:
 	@rm -rf "$(RPMBUILDDIR)"

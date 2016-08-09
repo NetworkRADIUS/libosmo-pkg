@@ -1,9 +1,9 @@
 [submodule "libosmo-sccp"]
 	path = libosmo-sccp
-	url = git@github.com:NetworkRADIUS/libosmo-sccp.git
+	url = https://github.com/NetworkRADIUS/libosmo-sccp.git
 [submodule "libosmocore"]
 	path = libosmocore
-	url = git@github.com:NetworkRADIUS/libosmocore.git
+	url = https://github.com/NetworkRADIUS/libosmocore.git
 [submodule "libosmo-netif"]
 	path = libosmo-netif
 	url = https://github.com/osmocom/libosmo-netif.git

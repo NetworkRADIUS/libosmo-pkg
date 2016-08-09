@@ -1,15 +1,18 @@
 DIR		:= $(dir $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-CPUS		:= CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
+ARCH		:= $(shell uname -m)
 BASEDIR		:= $(DIR:%/=%)
 RPMBUILDDIR	:= $(BASEDIR)/rpmbuild
+SPECSSRCDIR	:= $(BASEDIR)/specs
 SPECSDIR	:= $(RPMBUILDDIR)/SPECS
 SOURCESDIR	:= $(RPMBUILDDIR)/SOURCES
+RPMDIR		:= $(RPMBUILDDIR)/RPMS/$(ARCH)
+RELEASE		:= $(shell cd $(BASEDIR) && git rev-list --all --count)
 
 #
 #  Libraries for the packages we need to build
 #
-LIBRARIES	= $(shell git config --file .gitmodules --get-regexp path | awk '{ print $$2 }')
-SUBMODULES	= $(addprefix $(BASEDIR)/,$(addsuffix /.git,$(LIBRARIES)))
+LIBRARIES	:= $(foreach lib,$(shell git config --file .gitmodules --get-regexp path | awk '{ print $$2 }'),$(strip $(lib)))
+SUBMODULES	:= $(addprefix $(BASEDIR)/,$(addsuffix /.git,$(LIBRARIES)))
 
 #
 #  Have to ensure all submodules are checked out first
@@ -18,33 +21,84 @@ ifeq ($(filter $(SUBMODULES),$(MAKECMDGOALS)),)
 OUT=$(shell $(MAKE) -C "$(BASEDIR)" $(SUBMODULES))
 endif
 
-VERSIONS	= $(foreach mod,$(LIBRARIES),$(shell cd "$(mod)" && (git describe --abbrev=0)-$(shell cd "$(mod)" && git rev-list --all --count))
+GIT_VERSION	:= \
+version=$$(git describe --abbrev=0 --tags 2> /dev/null || echo "0.0.0");\
+count=$$(git rev-list --all --count);\
+if git describe --tags 2>&1 > /dev/null; then \
+        diff=$$(expr $${count} - $$(git rev-list $$version --count)); \
+else \
+        diff=$$count; \
+fi;\
+echo $${version}_$${diff}_g$$(git rev-parse --short HEAD 2> /dev/null)
 
-$(info $(VERSIONS))
+#
+#  Figure out the 'version' from the latest tag and commit count
+#
+VERSIONS	= $(foreach lib,$(LIBRARIES),$(lib)-$(shell cd "$(lib)" && $(GIT_VERSION)))
+PACKAGES	= $(addprefix $(RPMDIR)/,$(addsuffix -$(RELEASE).$(ARCH).rpm,$(VERSIONS)))
+
+#
+#  The order packages should be built
+#
+BUILDORDER	= libosmocore libosmo-abis libosmo-netif libosmo-sccp
+
 #
 #  Prevent .git dirs from being deleted  
 #
 .SECONDARY:
 
-.PHONY: all clean distclean directories udpdate test install
-all: $(PACKAGES) 
+.PHONY: all clean distclean directories dependencies udpdate test install
 
-directories: $(RPMBUILDDIR) $(SOURCESDIR) $(SPECSDIR)
+all: $(foreach lib,$(BUILDORDER),$(filter $(RPMDIR)/$(lib)%,$(PACKAGES)))
+
+directories: $(RPMBUILDDIR) $(SOURCESDIR) $(SPECSDIR) $(RPMDIR)
+
+dependencies:
+	@sudo yum install -y pcsc-lite-devel ortp-devel libtool
+
+clean:
+	@rm -rf "$(RPMBUILDDIR)"
+
+distclean: clean
+	@yum remove -y 'libosmo*'
+
+update:
+	@git submodule foreach -q --recursive 'branch="$$(git config -f $$toplevel/.gitmodules submodule.$$name.branch)"; git checkout $$branch && git pull'
+
+sync:
+	$(MAKE) update
+	git add $(find ./* -maxdepth 0 -type d)
+	git commit --message 'sync'
 
 #
-#  Setup our build directory
+#  Setup buildir
 #
-$(RPMBUILDDIR) $(SOURCESDIR) $(SPECSDIR):
-	HOME="$(BASEDIR)" rpmdev-setuptree
+$(RPMBUILDDIR) $(SOURCESDIR) $(SPECSDIR) $(RPMDIR):
+	@HOME="$(BASEDIR)" rpmdev-setuptree
 
-$(SPECDIR)/%.tar.bz2: %/.git $(SOURCESDIR)
-	echo ARCHIVE $(notdir $@)
-	mkdir -p "$(dir $@)"
-	cd $(dir $<)
-	git archive master | bzip2 > $@
+$(SPECSDIR)/%.spec: $(SPECSSRCDIR)/%.spec | $(SPECSDIR)
+	@cp "$<" "$@"
 
-$(RPMBUILDDIR)/%: $(RPMBUILDDIR)/%.tar.bz2
-	echo Hello
+$(SOURCESDIR)/%.patch: $(SPECSSRCDIR)/%.patch | $(SOURCESDIR)
+	@cp "$<" "$@"
+
+#
+#  Yay! Metamaking! This is really the only way you can do this
+#  without losing your sanity...
+#
+define package
+$(SOURCESDIR)/$(1)-$(2).tar.bz2: $(BASEDIR)/$(1) | $(SOURCESDIR)
+	@echo ARCHIVE \"$$@\"
+	@cd $(BASEDIR)/$(1) && git archive --prefix "$(1)-$(2)/" HEAD | bzip2 > $$@
+
+$(RPMDIR)/$(1)-$(2)-$(RELEASE).$(ARCH).rpm: $(SOURCESDIR)/$(1)-$(2).tar.bz2 \
+					    $(SPECSDIR)/$(1).spec \
+					    $(addprefix $(SOURCESDIR)/,$(foreach x,$(wildcard $(SPECSSRCDIR)/*$(1)*.patch),$(notdir $(x))))
+	@echo RPMBUILD $(1)
+	@HOME="$(BASEDIR)" rpmbuild -bb --define="_version $(2)" --define="_release $(RELEASE)" $(SPECSDIR)/$(x).spec
+	@yum --nogpgcheck -y localinstall $(RPMDIR)/*.rpm
+endef
+$(foreach x,$(LIBRARIES),$(eval $(call package,$(x),$(shell cd "$(BASEDIR)/$(x)" && $(GIT_VERSION)))))
 
 #
 #  Initialise submodules
@@ -53,13 +107,3 @@ $(RPMBUILDDIR)/%: $(RPMBUILDDIR)/%.tar.bz2
 	@git submodule update --init $(@D) > /dev/null 
 	@cd $(@D) && git checkout $$(git config -f ../.gitmodules submodule.$(subst /,,$(dir $@)).branch)
 
-clean:
-	rm -rf "$(RPMBUILDDIR)"
-
-update:
-	git submodule foreach -q --recursive 'branch="$$(git config -f $$toplevel/.gitmodules submodule.$$name.branch)"; git checkout $$branch && git pull'
-
-sync:
-	$(MAKE) update
-	git add $(find ./* -maxdepth 0 -type d)
-	git commit --message 'sync'

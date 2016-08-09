@@ -4,3 +4,9 @@
 [submodule "libosmocore"]
 	path = libosmocore
 	url = git@github.com:NetworkRADIUS/libosmocore.git
+[submodule "libosmo-netif"]
+	path = libosmo-netif
+	url = https://github.com/osmocom/libosmo-netif.git
+[submodule "libosmo-abis"]
+	path = libosmo-abis
+	url = https://github.com/osmocom/libosmo-abis.git

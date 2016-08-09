@@ -20,19 +20,18 @@ Name:           libosmo-sccp
 Summary:        Osmocom library for the A-bis interface between BTS and BSC
 License:        AGPL-3.0+ and GPL-2.0+
 Group:          Development/Libraries/C and C++
-Version:        0.7.0
-Release:        1.1
+Version:        %{_version}
+Release:        %{_release}
 Url:            http://openbsc.osmocom.org/
 
 #Git-Clone:	git://git.osmocom.org/libosmo-sccp
 #Snapshot:      0.7.0
-Source:         %name-%version.tar.xz
-Patch1:         0001-build-fixes.patch
+Source:         %name-%version.tar.bz2
+Patch1:         0001-libosmo-sccp-build-fixes.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  autoconf
 BuildRequires:  automake >= 1.6
 BuildRequires:  libtool
-BuildRequires:  pkg-config
 BuildRequires:  xz
 BuildRequires:  pkgconfig(libosmocore) >= 0.3.0
 BuildRequires:  pkgconfig(libosmogsm)
@@ -41,12 +40,12 @@ BuildRequires:  pkgconfig(talloc)
 %description
 Osmocom library for the A-bis interface between BTS and BSC.
 
-%package -n libosmo-xua-0_7_0
+%package -n libosmo-xua
 Summary:        Osmocom Message Transfer Part 2 User Adaptation library
 License:        AGPL-3.0+
 Group:          System/Libraries
 
-%description -n libosmo-xua-0_7_0
+%description -n libosmo-xua
 M2UA (RFC 3331) provides an SCTP (RFC 3873) adaptation layer for the
 seamless backhaul of MTP Level 2 user messages and service interface
 across an IP network.
@@ -55,7 +54,7 @@ across an IP network.
 Summary:        Development files for the Osmocom M2UA library
 License:        AGPL-3.0+
 Group:          Development/Libraries/C and C++
-Requires:       libosmo-xua-0_7_0 = %version
+Requires:       libosmo-xua = %version
 
 %description -n libosmo-xua-devel
 M2UA provides an SCTP adaptation layer for MTP level 2 user messages
@@ -64,12 +63,12 @@ and service interface across an IP network.
 This subpackage contains the development files for the Osmocom M2UA
 library.
 
-%package -n libosmo-mtp-0_7_0
+%package -n libosmo-mtp
 Summary:        Osmocom Message Transfer Part library
 License:        GPL-2.0+
 Group:          System/Libraries
 
-%description -n libosmo-mtp-0_7_0
+%description -n libosmo-mtp
 The Message Transfer Part (MTP) is part of the Signaling System 7
 (SS7) used for communication in Public Switched Telephone Networks.
 MTP is responsible for reliable, unduplicated and in-sequence
@@ -79,7 +78,7 @@ transport of SS7 messages between communication partners.
 Summary:        Development files for the Osmocom MTP library
 License:        GPL-2.0+
 Group:          Development/Libraries/C and C++
-Requires:       libosmo-mtp-0_7_0 = %version
+Requires:       libosmo-mtp = %version
 
 %description -n libosmo-mtp-devel
 MTP is part of SS7 used for communication in Public Switched
@@ -88,23 +87,11 @@ Telephone Networks.
 This subpackage contains the development files for the Osmocom MTP
 library.
 
-%package -n libosmo-sccp-0_7_0
-Summary:        Osmocom Signalling Connection Control Part library
-License:        GPL-2.0+
-Group:          System/Libraries
-
-%description -n libosmo-sccp-0_7_0
-The Signalling Connection Control Part (SCCP) is a network layer
-protocol that provides extended routing, flow control, segmentation,
-connection-orientation, and error correction facilities in Signaling
-System 7 telecommunications networks. SCCP relies on the services of
-MTP for basic routing and error detection.
-
 %package -n libosmo-sccp-devel
 Summary:        Development files for the Osmocom SCCP library
 License:        GPL-2.0+
 Group:          Development/Libraries/C and C++
-Requires:       libosmo-sccp-0_7_0 = %version
+Requires:       libosmo-sccp = %version
 
 %description -n libosmo-sccp-devel
 SCCP is a network layer protocol that provides routing, flow control,
@@ -115,7 +102,7 @@ This subpackage contains the development files for the Osmocom SCCP
 library.
 
 %prep
-%setup -qn %name
+%setup -q
 %patch -P 1 -p1
 
 %build
@@ -128,42 +115,42 @@ make %{?_smp_mflags}
 b="%buildroot"
 make %{?_smp_mflags} install DESTDIR="$b"
 find "$b/%_libdir" -type f -name "*.la" -delete
+find "$b/%_libdir" -name "*sigtran*" -delete
 
 %check
 make %{?_smp_mflags} check
 
-%post   -n libosmo-xua-0_7_0 -p /sbin/ldconfig
-%postun -n libosmo-xua-0_7_0 -p /sbin/ldconfig
-%post   -n libosmo-mtp-0_7_0 -p /sbin/ldconfig
-%postun -n libosmo-mtp-0_7_0 -p /sbin/ldconfig
-%post   -n libosmo-sccp-0_7_0 -p /sbin/ldconfig
-%postun -n libosmo-sccp-0_7_0 -p /sbin/ldconfig
+%post   -n libosmo-xua -p /sbin/ldconfig
+%postun -n libosmo-xua -p /sbin/ldconfig
+%post   -n libosmo-mtp -p /sbin/ldconfig
+%postun -n libosmo-mtp -p /sbin/ldconfig
+%post   -n libosmo-sccp -p /sbin/ldconfig
+%postun -n libosmo-sccp -p /sbin/ldconfig
 
-%files -n libosmo-xua-0_7_0
+%files -n libosmo-xua
 %defattr(-,root,root)
-%_libdir/libosmo-xua-%version.so
+%_libdir/libosmo-xua*.so
 
 %files -n libosmo-xua-devel
 %defattr(-,root,root)
 %dir %_includedir/osmocom
 %_includedir/osmocom/sigtran/
-%_libdir/libosmo-xua.so
+%_libdir/libosmo-xua*.so
 
-%files -n libosmo-mtp-0_7_0
+%files -n libosmo-mtp
 %defattr(-,root,root)
-%_libdir/libosmo-mtp-%version.so
+%_libdir/libosmo-mtp*.so
 
 %files -n libosmo-mtp-devel
 %defattr(-,root,root)
 %dir %_includedir/osmocom
 %_includedir/osmocom/mtp/
-%_libdir/libosmo-mtp.so
+%_libdir/libosmo-mtp*.so
 %_libdir/pkgconfig/libosmo-mtp.pc
 
-%files -n libosmo-sccp-0_7_0
+%files -n libosmo-sccp
 %defattr(-,root,root)
-%_libdir/libosmo-sccp.so
-%_libdir/libosmo-sccp-%version.so
+%_libdir/libosmo-sccp*.so
 
 %files -n libosmo-sccp-devel
 %defattr(-,root,root)

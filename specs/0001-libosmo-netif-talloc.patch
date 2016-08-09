@@ -1,0 +1,156 @@
+From 84cb7836dfb9cee206e7d2bd552d4a71fbea4aef Mon Sep 17 00:00:00 2001
+From: Jan Engelhardt <jengelh@inai.de>
+Date: Thu, 2 Oct 2014 23:26:16 +0200
+Subject: [PATCH] build: support external libtalloc
+
+---
+ configure.ac                 |    1 +
+ examples/Makefile.am         |   26 +++++++++++++-------------
+ examples/channel/Makefile.am |    6 +++---
+ src/Makefile.am              |    4 ++--
+ src/channel/abis/Makefile.am |    4 ++--
+ 5 files changed, 21 insertions(+), 20 deletions(-)
+
+Index: libosmo-netif/configure.ac
+===================================================================
+--- libosmo-netif.orig/configure.ac
++++ libosmo-netif/configure.ac
+@@ -52,6 +52,7 @@ AC_SEARCH_LIBS([sctp_send], [sctp], [
+ 	AC_MSG_ERROR([sctp_send not found in searched libs])])
+ LIBS=$old_LIBS
+ 
++PKG_CHECK_MODULES([TALLOC], [talloc])
+ AC_CHECK_HEADERS(dahdi/user.h,,AC_MSG_WARN(DAHDI input driver will not be built))
+ 
+ AC_OUTPUT(
+Index: libosmo-netif/examples/Makefile.am
+===================================================================
+--- libosmo-netif.orig/examples/Makefile.am
++++ libosmo-netif/examples/Makefile.am
+@@ -1,5 +1,5 @@
+ AM_CPPFLAGS = -I$(top_srcdir)/include
+-AM_CFLAGS=-Wall -g $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOABIS_CFLAGS) $(COVERAGE_CFLAGS)
++AM_CFLAGS=-Wall -g $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOABIS_CFLAGS) $(COVERAGE_CFLAGS) $(TALLOC_CFLAGS)
+ AM_LDFLAGS = $(COVERAGE_LDFLAGS)
+ 
+ SUBDIRS = channel
+@@ -19,48 +19,48 @@ noinst_PROGRAMS = ipa-stream-client		\
+ 
+ ipa_stream_client_SOURCES = ipa-stream-client.c
+ ipa_stream_client_LDADD = $(top_builddir)/src/libosmonetif.la \
+-			  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ ipa_stream_server_SOURCES = ipa-stream-server.c
+ ipa_stream_server_LDADD = $(top_builddir)/src/libosmonetif.la \
+-			  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ lapd_over_datagram_user_SOURCES = lapd-over-datagram-user.c
+ lapd_over_datagram_user_LDADD = $(top_builddir)/src/libosmonetif.la \
+ 				  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) \
+-				  $(LIBOSMOABIS_LIBS)
++				  $(LIBOSMOABIS_LIBS) $(TALLOC_LIBS)
+ 
+ lapd_over_datagram_network_SOURCES = lapd-over-datagram-network.c
+ lapd_over_datagram_network_LDADD = $(top_builddir)/src/libosmonetif.la \
+ 				  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) \
+-				  $(LIBOSMOABIS_LIBS)
++				  $(LIBOSMOABIS_LIBS) $(TALLOC_LIBS)
+ 
+ stream_client_SOURCES = stream-client.c
+ stream_client_LDADD = $(top_builddir)/src/libosmonetif.la \
+-		      $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++		      $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ stream_server_SOURCES = stream-server.c
+ stream_server_LDADD = $(top_builddir)/src/libosmonetif.la \
+-		      $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++		      $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ rs232_read_SOURCES = rs232-read.c
+-rs232_read_LDADD = $(top_builddir)/src/libosmonetif.la $(LIBOSMOCORE_LIBS)
++rs232_read_LDADD = $(top_builddir)/src/libosmonetif.la $(LIBOSMOCORE_LIBS) $(TALLOC_LIBS)
+ 
+ rs232_write_SOURCES = rs232-write.c
+-rs232_write_LDADD = $(top_builddir)/src/libosmonetif.la $(LIBOSMOCORE_LIBS)
++rs232_write_LDADD = $(top_builddir)/src/libosmonetif.la $(LIBOSMOCORE_LIBS) $(TALLOC_LIBS)
+ 
+ rtp_udp_test_client_SOURCES = rtp-udp-test-client.c
+ rtp_udp_test_client_LDADD = $(top_builddir)/src/libosmonetif.la \
+-			    $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			    $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ rtp_udp_test_server_SOURCES = rtp-udp-test-server.c
+ rtp_udp_test_server_LDADD = $(top_builddir)/src/libosmonetif.la \
+-			    $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			    $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ osmux_test_input_SOURCES = osmux-test-input.c
+ osmux_test_input_LDADD = $(top_builddir)/src/libosmonetif.la \
+-			 $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			 $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ osmux_test_output_SOURCES = osmux-test-output.c
+ osmux_test_output_LDADD = $(top_builddir)/src/libosmonetif.la \
+-			  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			  $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+Index: libosmo-netif/examples/channel/Makefile.am
+===================================================================
+--- libosmo-netif.orig/examples/channel/Makefile.am
++++ libosmo-netif/examples/channel/Makefile.am
+@@ -1,5 +1,5 @@
+ AM_CPPFLAGS = -I$(top_srcdir)/include
+-AM_CFLAGS=-Wall -g $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOABIS_CFLAGS) $(COVERAGE_CFLAGS)
++AM_CFLAGS=-Wall -g $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOABIS_CFLAGS) $(COVERAGE_CFLAGS) $(TALLOC_CFLAGS)
+ AM_LDFLAGS = $(COVERAGE_LDFLAGS)
+ 
+ noinst_PROGRAMS = abis_ipa_stream_server	\
+@@ -7,8 +7,8 @@ noinst_PROGRAMS = abis_ipa_stream_server
+ 
+ abis_ipa_stream_server_SOURCES = abis_ipa_stream_server.c
+ abis_ipa_stream_server_LDADD = $(top_builddir)/src/libosmonetif.la 	\
+-			       $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			       $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+ 
+ abis_ipa_stream_client_SOURCES = abis_ipa_stream_client.c
+ abis_ipa_stream_client_LDADD = $(top_builddir)/src/libosmonetif.la 	\
+-			       $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS)
++			       $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(TALLOC_LIBS)
+Index: libosmo-netif/src/Makefile.am
+===================================================================
+--- libosmo-netif.orig/src/Makefile.am
++++ libosmo-netif/src/Makefile.am
+@@ -3,14 +3,14 @@
+ LIBVERSION=3:0:0
+ 
+ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)
+-AM_CFLAGS= -fPIC -Wall $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOABIS_CFLAGS) $(COVERAGE_CFLAGS) $(LIBSCTP_CFLAGS)
++AM_CFLAGS= -fPIC -Wall $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOABIS_CFLAGS) $(COVERAGE_CFLAGS) $(LIBSCTP_CFLAGS) $(TALLOC_CFLAGS)
+ AM_LDFLAGS = $(COVERAGE_LDFLAGS)
+ 
+ SUBDIRS = channel
+ 
+ lib_LTLIBRARIES = libosmonetif.la
+ 
+-libosmonetif_la_LIBADD = channel/abis/libosmonetif-abis.la $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(LIBSCTP_LIBS)
++libosmonetif_la_LIBADD = channel/abis/libosmonetif-abis.la $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(LIBSCTP_LIBS) $(TALLOC_LIBS)
+ libosmonetif_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
+ 
+ libosmonetif_la_SOURCES = amr.c			\
+Index: libosmo-netif/src/channel/abis/Makefile.am
+===================================================================
+--- libosmo-netif.orig/src/channel/abis/Makefile.am
++++ libosmo-netif/src/channel/abis/Makefile.am
+@@ -1,9 +1,9 @@
+ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)
+-AM_CFLAGS= -fPIC -Wall $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOVTY_CFLAGS) $(COVERAGE_CFLAGS)
++AM_CFLAGS= -fPIC -Wall $(LIBOSMOCORE_CFLAGS) $(LIBOSMOGSM_CFLAGS) $(LIBOSMOVTY_CFLAGS) $(COVERAGE_CFLAGS) $(TALLOC_CFLAGS)
+ AM_LDFLAGS = $(COVERAGE_LDFLAGS)
+ 
+ noinst_LTLIBRARIES = libosmonetif-abis.la
+ 
+ libosmonetif_abis_la_SOURCES = ipa_stream_server.c	\
+ 			       ipa_stream_client.c
+-libosmonetif_abis_la_LIBADD = $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(LIBOSMOVTY_LIBS)
++libosmonetif_abis_la_LIBADD = $(LIBOSMOCORE_LIBS) $(LIBOSMOGSM_LIBS) $(LIBOSMOVTY_LIBS) $(TALLOC_LIBS)

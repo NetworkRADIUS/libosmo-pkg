@@ -30,10 +30,8 @@ echo $${version}_$${diff}_g$$(git rev-parse --short HEAD 2> /dev/null)
 #
 #  Initialise the submodules
 #
-OUT := $(foreach x,$(LIBRARIES),$(shell \
-	(test -e "$(BASEDIR)/$(x)" || git submodule update -- "$(BASEDIR)/$(x)" || git submodule init -- "$(BASEDIR)/$(x)")) && \
-	cd "$(BASEDIR)/$(x)" && git checkout $$(git config -f ../.gitmodules submodule.$(x).branch))) \
-))
+OUT := $(foreach x,$(LIBRARIES),$(shell test -e "$(BASEDIR)/$(x)/.git" || git submodule update --init -- "$(BASEDIR)/$(x)"))
+$(info $(OUT))
 
 #
 #  Figure out the 'version' from the latest tag and commit count

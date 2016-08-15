@@ -1,0 +1,42 @@
+diff --git a/Makefile.am b/Makefile.am
+index 66b4d17..b1eff56 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -4,7 +4,7 @@ AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include
+ SUBDIRS = include src tests
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_DATA = libosmo-sccp.pc libosmo-mtp.pc libosmo-sigtran.pc
++pkgconfig_DATA = libosmo-sccp.pc libosmo-mtp.pc libosmo-sigtran.pc libosmo-xua.pc
+ 
+ EXTRA_DIST = .version
+ 
+diff --git a/libosmo-xua.pc.in b/libosmo-xua.pc.in
+new file mode 100644
+index 0000000..28f8285
+--- /dev/null
++++ b/libosmo-xua.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: Osmo XUA Lib
++Description: Osmo XUA Lib
++Version: @VERSION@
++Libs: -L${libdir} -losmo-xua
++Cflags: -I${includedir}/
+
+diff --git a/configure.ac b/configure.ac
+index e19c8da..da6de8b 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -34,6 +34,7 @@ AC_OUTPUT(
+     libosmo-sigtran.pc
+     libosmo-sccp.pc
+     libosmo-mtp.pc
++    libosmo-xua.pc
+     include/sccp/Makefile
+     include/mtp/Makefile
+     include/osmocom/Makefile

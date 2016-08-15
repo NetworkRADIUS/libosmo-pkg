@@ -29,6 +29,7 @@ Url:            http://openbsc.osmocom.org/
 Source:         %name-%version.tar.bz2
 Patch0:         0001-libosmo-sccp-build-fixes.patch
 Patch1:         0002-libosmo-sccp-fix-pc-files.patch
+Patch2:         0003-libosmo-sccp-xua-pc.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  autoconf
 BuildRequires:  automake >= 1.6
@@ -104,7 +105,7 @@ library.
 
 %prep
 %setup -q
-%patch -P 0 -P 1 -p1
+%patch -P 0 -P 1 -P 2 -p1
 
 %build
 echo "%version" >.tarball-version
@@ -131,6 +132,7 @@ make %{?_smp_mflags} check
 %files -n libosmo-xua
 %defattr(-,root,root)
 %_libdir/libosmo-xua*.so
+%_libdir/pkgconfig/libosmo-xua.pc
 
 %files -n libosmo-xua-devel
 %defattr(-,root,root)

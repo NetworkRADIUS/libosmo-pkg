@@ -27,7 +27,8 @@ Url:            http://openbsc.osmocom.org/
 #Git-Clone:	git://git.osmocom.org/libosmo-sccp
 #Snapshot:      0.7.0
 Source:         %name-%version.tar.bz2
-Patch1:         0001-libosmo-sccp-build-fixes.patch
+Patch0:         0001-libosmo-sccp-build-fixes.patch
+Patch1:         0002-libosmo-sccp-fix-pc-files.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  autoconf
 BuildRequires:  automake >= 1.6
@@ -103,7 +104,7 @@ library.
 
 %prep
 %setup -q
-%patch -P 1 -p1
+%patch -P 0 -P 1 -p1
 
 %build
 echo "%version" >.tarball-version

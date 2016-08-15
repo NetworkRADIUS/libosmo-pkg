@@ -1,0 +1,22 @@
+diff --git a/libosmo-mtp.pc.in b/libosmo-mtp.pc.in
+index 675d0d3..5e99dd3 100644
+--- a/libosmo-mtp.pc.in
++++ b/libosmo-mtp.pc.in
+@@ -6,5 +6,5 @@ includedir=@includedir@
+ Name: Osmo MTP Lib
+ Description: Osmo MTP Lib
+ Version: @VERSION@
+-Libs: -L${libdir} -lmtp
++Libs: -L${libdir} -losmo-mtp
+ Cflags: -I${includedir}/
+diff --git a/libosmo-sccp.pc.in b/libosmo-sccp.pc.in
+index eda8d49..9dd18c1 100644
+--- a/libosmo-sccp.pc.in
++++ b/libosmo-sccp.pc.in
+@@ -6,5 +6,5 @@ includedir=@includedir@
+ Name: OpenBSC SCCP Lib
+ Description: OpenBSC SCCP Lib
+ Version: @VERSION@
+-Libs: -L${libdir} -lsccp
++Libs: -L${libdir} -losmo-sccp
+ Cflags: -I${includedir}/

@@ -255,7 +255,7 @@ applications that want to make use of libosmovty.
 echo "%version" >.tarball-version
 autoreconf -fiv
 %configure --enable-shared --disable-static \
-	--includedir="%_includedir/%name"
+	--includedir="%_includedir"
 make %{?_smp_mflags}
 
 %install
@@ -292,9 +292,8 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmocodec-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom
-%_includedir/%name/osmocom/codec/
+%dir %_includedir/osmocom
+%_includedir/osmocom/codec/
 %_libdir/libosmocodec.so
 %_libdir/pkgconfig/libosmocodec.pc
 
@@ -304,9 +303,8 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmocore-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom
-%_includedir/%name/osmocom/core/
+%dir %_includedir/osmocom
+%_includedir/osmocom/core/
 %_libdir/libosmocore.so
 %_libdir/pkgconfig/libosmocore.pc
 
@@ -316,9 +314,8 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmoctrl-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom
-%_includedir/%name/osmocom/ctrl/
+%dir %_includedir/osmocom
+%_includedir/osmocom/ctrl/
 %_libdir/libosmoctrl.so
 %_libdir/pkgconfig/libosmoctrl.pc
 
@@ -328,9 +325,8 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmogb-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom
-%_includedir/%name/osmocom/gprs/
+%dir %_includedir/osmocom
+%_includedir/osmocom/gprs/
 %_libdir/libosmogb.so
 %_libdir/pkgconfig/libosmogb.pc
 
@@ -340,10 +336,9 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmogsm-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom
-%_includedir/%name/osmocom/gsm/
-%_includedir/%name/osmocom/crypt/
+%dir %_includedir/osmocom
+%_includedir/osmocom/gsm/
+%_includedir/osmocom/crypt/
 %_libdir/libosmogsm.so
 %_libdir/pkgconfig/libosmogsm.pc
 
@@ -353,9 +348,8 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmosim-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom/
-%_includedir/%name/osmocom/sim/
+%dir %_includedir/osmocom/
+%_includedir/osmocom/sim/
 %_libdir/libosmosim.so
 %_libdir/pkgconfig/libosmosim.pc
 
@@ -365,9 +359,8 @@ make %{?_smp_mflags} check || :
 
 %files -n libosmovty-devel
 %defattr(-,root,root)
-%dir %_includedir/%name
-%dir %_includedir/%name/osmocom
-%_includedir/%name/osmocom/vty/
+%dir %_includedir/osmocom
+%_includedir/osmocom/vty/
 %_libdir/libosmovty.so
 %_libdir/pkgconfig/libosmovty.pc
 
